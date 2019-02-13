@@ -16,7 +16,9 @@ app.use(
 );
 app.use(bodyParser.json());
 var multer = require("multer");
-
+const excelToJson = require('convert-excel-to-json');
+const fs = require('fs');
+ 
 
   var host = "http://localhost";
   var port = process.env.PORT || 2019;
@@ -48,7 +50,14 @@ app.post("/exceltojson", upload.single("file"), function (req, res) {
  var response = {};
   
   console.log(req.file);
-  res.send(req.file)
+  const result = excelToJson({
+    source: fs.readFileSync(req.file.path),
+    columnToKey: {
+      '*': '{{columnHeader}}'
+  }
+});
+
+res.send(result)
   return new Promise(function (resolve, reject) {
     console.log(req.file);
   });
