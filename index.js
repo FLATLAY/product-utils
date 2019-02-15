@@ -5,6 +5,7 @@ var path = require("path");
 
 var publicDir = require('path').join(__dirname, '/uploads');
 app.use(express.static(publicDir));
+const fs = require('fs');
 
 module.exports = app;
 
@@ -17,7 +18,6 @@ app.use(
 app.use(bodyParser.json());
 var multer = require("multer");
 const excelToJson = require('convert-excel-to-json');
-const fs = require('fs');
 
 
 var host = "http://localhost";
@@ -49,7 +49,7 @@ var upload = multer({
 app.post("/exceltojson", upload.single("file"), function (req, res) {
   var response = {};
 
-  console.log(req.file);
+  //console.log(req.file);
   const result = excelToJson({
     source: fs.readFileSync(req.file.path),
     columnToKey: {
@@ -135,6 +135,32 @@ app.post("/exceltojson", upload.single("file"), function (req, res) {
     respond.outfits.push(tempElement);
 
   });
+
+
+
   respond.outfits.shift();
+
+
+  var filename = req.file.filename;
+  filename = filename.replace(/\..+$/, '');
+  filename = publicDir + '/' + filename;
+  console.log(filename)
+  fs.writeFile(filename, JSON.stringify(respond), function (err) {
+    if (err) {
+      return console.log(err);
+    }
+  });
+
   res.send(respond)
+});
+
+app.get("/product/:id", function (req, res) {
+  var filename = publicDir + '/' + req.params.id
+  fs.readFile(filename, function read(err, data) {
+    if (err) {
+      throw err;
+    }
+    res.send(data)
+  });
+
 });
