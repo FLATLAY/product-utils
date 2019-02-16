@@ -56,21 +56,23 @@ app.post("/exceltojson", upload.single("file"), function (req, res) {
       '*': '{{columnHeader}}'
     }
   });
+
+  var pagenum = parseInt(req.body.page);
   var respond = {
     "meta": {
-      "id": 1
+      "id": pagenum + 1
     },
     "outfits": []
   }
-  var tempElement = {};
  
-  var counter = req.body.page * 150;
+ 
+  var counter = pagenum * 150;
   var last = counter + 150;
 
   console.log("products from "+counter+" to "+last);
 
   result['Sheet1'].forEach(element => {
-   
+    var tempElement = {};
     if(counter<last){
       counter++
    
