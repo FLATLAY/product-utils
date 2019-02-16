@@ -164,7 +164,7 @@ app.post("/exceltojson", upload.single("file"), function (req, res) {
 });
 
 app.get("/product/:id", function (req, res) {
-  var filename = publicDir + '/' + req.params.id+ '.json'
+  var filename = publicDir + '/' + req.params.id
   fs.readFile(filename, function read(err, data) {
     if (err) {
       throw err;
