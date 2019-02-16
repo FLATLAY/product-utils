@@ -62,9 +62,18 @@ app.post("/exceltojson", upload.single("file"), function (req, res) {
     },
     "outfits": []
   }
+  var tempElement = {};
+ 
+  var counter = req.body.page * 150;
+  var last = counter + 150;
+
+  console.log("products from "+counter+" to "+last);
 
   result['Sheet1'].forEach(element => {
-    var tempElement = {};
+   
+    if(counter<last){
+      counter++
+   
 
     tempElement["id"] = element["Outfit ID"]
     tempElement["gender"] = element["Gender"]
@@ -133,7 +142,7 @@ app.post("/exceltojson", upload.single("file"), function (req, res) {
 
 
     respond.outfits.push(tempElement);
-
+  }
   });
 
 
@@ -143,7 +152,7 @@ app.post("/exceltojson", upload.single("file"), function (req, res) {
 
   var filename = req.file.filename;
   filename = filename.replace(/\..+$/, '');
-  filename = publicDir + '/' + filename;
+  filename = publicDir + '/' + filename+ '.json' ;
   console.log(filename)
   fs.writeFile(filename, JSON.stringify(respond), function (err) {
     if (err) {
@@ -155,7 +164,7 @@ app.post("/exceltojson", upload.single("file"), function (req, res) {
 });
 
 app.get("/product/:id", function (req, res) {
-  var filename = publicDir + '/' + req.params.id
+  var filename = publicDir + '/' + req.params.id+ '.json'
   fs.readFile(filename, function read(err, data) {
     if (err) {
       throw err;
