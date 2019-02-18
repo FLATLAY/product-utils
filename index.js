@@ -82,7 +82,7 @@ app.post("/exceltojson", upload.single("file"), function (req, res) {
       tempElement["title"] = element["Title"]
       tempElement["description"] = ""
       //tempElement["Image_url"]= element["Image URL"]
-      tempElement["Image_url"] = element["Pic Link"]
+      tempElement["image_url"] = element["Pic Link"]
 
       tempElement["influencer"] = {}
 
@@ -91,7 +91,7 @@ app.post("/exceltojson", upload.single("file"), function (req, res) {
       tempElement["influencer"]["name"] = element["Name"]
       tempElement["influencer"]["country"] = element["Country"]
       tempElement["influencer"]["description"] = ""
-      tempElement["influencer"]["Profile_image_url"] = element["Profile Image URL"]
+      tempElement["influencer"]["profile_image_url"] = element["Profile Image URL"]
       tempElement["influencer"]["header_image_url"] = ""
 
 
