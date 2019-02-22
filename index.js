@@ -18,7 +18,7 @@ app.use(
 app.use(bodyParser.json());
 var multer = require("multer");
 const excelToJson = require('convert-excel-to-json');
-
+var request = require('request');
 
 var host = "http://localhost";
 var port = process.env.PORT || 2019;
@@ -68,21 +68,24 @@ app.post("/exceltojson", upload.single("file"), function (req, res) {
 
   var counter = pagenum * 151;
   var last = counter + 151;
-
+  var count = 0
   console.log("products from " + counter + " to " + last);
 
   result['Sheet1'].forEach(element => {
     var tempElement = {};
     if (counter < last) {
-      counter++
+      count++
 
 
       tempElement["id"] = element["Outfit ID"]
       tempElement["gender"] = element["Gender"]
       tempElement["title"] = element["Title"]
       tempElement["description"] = ""
-      //tempElement["Image_url"]= element["Image URL"]
-      tempElement["image_url"] = element["Pic Link"]
+      tempElement["image_url"]= element["Image URL"]
+      checkUrl(element["Image URL"])
+
+
+      tempElement["original_url"] = element["Pic Link"]
 
       tempElement["influencer"] = {}
 
@@ -93,7 +96,8 @@ app.post("/exceltojson", upload.single("file"), function (req, res) {
       tempElement["influencer"]["description"] = ""
       tempElement["influencer"]["profile_image_url"] = element["Profile Image URL"]
       tempElement["influencer"]["header_image_url"] = ""
-
+      checkUrl(element["Profile Image URL"])
+      
 
       tempElement["influencer"]["social_accounts"] = {}
       tempElement["influencer"]["social_accounts"]["instagram"] = element["Instagram URL"]
@@ -141,12 +145,13 @@ app.post("/exceltojson", upload.single("file"), function (req, res) {
           "sku": element["SKU 6"]
         })
 
-
-
+      if(element["SKU 1"]){
       respond.outfits.push(tempElement);
+        counter++;
+    }
     }
   });
-
+  console.log(count + " Items was read");
 
 
   respond.outfits.shift();
@@ -175,3 +180,18 @@ app.get("/product/:id", function (req, res) {
   });
 
 });
+
+
+function checkUrl(url){
+  request.head(url, function (error, response) {
+    try{
+    if(response.statusCode != 200){
+    console.log('url:', url);
+    console.log('statusCode:', response.statusCode); 
+    }
+  }catch(e){
+    console.log('problem: '+e);
+  console.log('url:', url);
+}
+  });
+}
