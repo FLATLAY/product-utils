@@ -116,7 +116,7 @@ app.post("/exceltojson", upload.single("file"), function (req, res) {
       tempElement["articles"] = []
       if (element["SKU 1"])
         tempElement["articles"].push({
-          "match_type": "exact",
+          "match_type": "similar",
           "sku": element["SKU 1"]
         })
       if (element["SKU 2"])
