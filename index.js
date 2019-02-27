@@ -8,7 +8,7 @@ app.use(express.static(publicDir));
 const fs = require('fs');
 
 module.exports = app;
-
+const cheerio = require('cheerio')
 var bodyParser = require("body-parser");
 app.use(
   bodyParser.urlencoded({
@@ -45,7 +45,7 @@ var upload = multer({
 });
 var respond = {
   "meta": {
-    "id":  1
+    "id": 1
   },
   "outfits": []
 }
@@ -64,7 +64,7 @@ app.post("/exceltojson", upload.single("file"), function (req, res) {
   });
 
   var pagenum = parseInt(req.body.page);
-  
+
 
   var counter = 0;
   var last = 310;
@@ -227,102 +227,59 @@ function starttocheck(url) {
 var count = 0;
 var html = ""
 async function starttocreatehtml(num) {
-console.log("start to create "+ num);
-  var filename = publicDir + '/somerandom.html';
+console.log("start to create " + num);
+var filename = publicDir + '/somerandom.html';
 
-  var url = "https://www.zalando.de/katalog/?q="
-  var localhtml="";
-try{
-  localhtml+= "<p><p><p> id: "+respond.outfits[num].id+"<p>"
-  localhtml+="<img src="+respond.outfits[num].image_url+"><p>"
- 
-    if(respond.outfits[num].articles[0])
-    request.get(url+respond.outfits[num].articles[0].sku, function (error, response) {
-      var substring = response.body.substr(response.body.search('og:image'), 240);
-      var substring = substring.match('https.*\.jpg');
-     
-      if(substring)
-      localhtml+="<img alt='' src="+substring[0]+" id=''><p>"
-       
-       console.log("1 done");
+var url = "https://www.zalando.de/katalog/?q="
+var localhtml = "";
+try {
+  localhtml += "<p><p><p> id: " + respond.outfits[num].id + "<p>"
+  localhtml += "<img width='500' height='600' src=" + respond.outfits[num].image_url + "><p>"
 
-       if(respond.outfits[num].articles[1])
-       request.get(url+respond.outfits[num].articles[1].sku, function (error, response) {
-        var substring = response.body.substr(response.body.search('og:image'), 240);
-        var substring = substring.match('https.*\.jpg');
+  function checkSKU(skunum) {
+    var fullurl = url + respond.outfits[num].articles[skunum].sku;
+    request.get(fullurl, function (error, response) {
       
-       if(substring)
-       localhtml+="<img alt='' src="+substring[0]+" id=''><p>"
-        
-        console.log("2 done");
-        console.log(url+respond.outfits[num].articles[2].sku);
+      var $ = cheerio.load(response.body);
+      var substring = $('meta[property="og:image"]').attr('content');
 
-        if(respond.outfits[num].articles[2])
-       request.get(url+respond.outfits[num].articles[2].sku, function (error, response) {
+      //to checkout the html pages
+      //var aaa =""+ response.body;
+      //fs.appendFile(filename, aaa, function (err) { });
+      
+      //second rule(if og:image didnt exist)
+      if(!substring)
+      var substring = $('img[id="galleryImage-0"]').attr('src');
     
-        var substring = response.body.substr(response.body.search('og:image'), 240);
-        var substring = substring.match('https.*\.jpg');
-        
-       if(substring)
-       localhtml+="<img alt='' src="+substring[0]+" id=''><p>"
-        console.log("3 done");
+      if (substring) {
+        localhtml += "<a target='_blank' href='"+fullurl+"'><img width='100' height='100' alt='' src=" + substring + " id=''></a><p>"
+        console.log(skunum + " done");
+        if (respond.outfits[num].articles[skunum + 1]) {
+          checkSKU(skunum + 1)
+        } else {
+          localhtml +="<p>==========================================================================";
+          localhtml += "product "+num +" has "+ (skunum+1) +" sku";
 
-
-        if(respond.outfits[num].articles[3]){
-       request.get(url+respond.outfits[num].articles[3].sku, function (error, response) {
-        var substring = response.body.substr(response.body.search('og:image'), 240);
-        var substring = substring.match('https.*\.jpg');
-      
-       if(substring)
-        localhtml+="<img alt='' src="+substring[0]+" id=''><p>"
-        console.log("4 done");
-
-
-        if(respond.outfits[num].articles[4]){
-       request.get(url+respond.outfits[num].articles[4].sku, function (error, response) {
-        var substring = response.body.substr(response.body.search('og:image'), 240);
-        var substring = substring.match('https.*\.jpg');
-      
-       if(substring)
-       localhtml+="<img alt='' src="+substring[0]+" id=''><p>"
-        console.log("5 done");
-        console.log("5 done");
-
-
-        if(respond.outfits[num].articles[5]){
-       request.get(url+respond.outfits[num].articles[5].sku, function (error, response) {
-        var substring = response.body.substr(response.body.search('og:image'), 240);
-        var substring = substring.match('https.*\.jpg');
-      
-       if(substring)
-       localhtml+="<img alt='' src="+substring[0]+" id=''><p>"
-        console.log("6 done");
-
-        fs.appendFile(filename, localhtml, function (err) {
-          if(num <302)
-          starttocreatehtml(num+1)
-        });
-
-    });}else{fs.appendFile(filename, localhtml, function (err) {
-      if(num <302)
-      starttocreatehtml(num+1)
-    });}
-  });}else{fs.appendFile(filename, localhtml, function (err) {
-    if(num <302)
-    starttocreatehtml(num+1)
-  });}
-});}else {fs.appendFile(filename, localhtml, function (err) {
-  if(num <302)
-  starttocreatehtml(num+1)
-});}
-  });});});
-
-
-    } catch (e) {
-      console.log('problem: ' + e);
-    }
-}
-
-function savefile(localhtml){
+          fs.appendFile(filename, localhtml, function (err) {
+            console.log("product "+num +" has "+ (skunum+1) +" sku");
+            if (num < 302)
+              starttocreatehtml(num + 1)
+          });
+          localhtml="";
+        }
+      } else {
+        console.log(skunum + " passed empty try again: https://www.zalando.de/katalog/?q="+ respond.outfits[num].articles[skunum + 1].sku);
+        checkSKU(skunum)
+      }
+    });
+  }
+  checkSKU(0)
   
+
+
 }
+catch (e) {
+  console.log('problem: ' + e);
+}
+}
+
