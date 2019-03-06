@@ -179,7 +179,7 @@ app.post("/exceltojson", upload.single("file"), function (req, res) {
   });
 
   //starttocheck(links.pop());
-  starttocreatehtml(0);
+  starttocreatehtml(13);
   res.send(respond)
 });
 
@@ -259,8 +259,10 @@ try {
         console.log(skunum + " passed empty try again: https://www.zalando.de/katalog/?q="+ respond.outfits[num].articles[skunum].sku);
         localhtml +="<p>!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
         localhtml +skunum + " passed empty try again: https://www.zalando.de/katalog/?q="+ respond.outfits[num].articles[skunum].sku
-        //activate retrial 
-        //checkSKU(skunum)
+        
+        fs.appendFile("problematicSkus.txt", respond.outfits[num].articles[skunum].sku +"\n", function (err) {});
+
+
       }
       if (respond.outfits[num].articles[skunum + 1]) {
         checkSKU(skunum + 1)
