@@ -254,23 +254,28 @@ try {
       if (substring) {
         localhtml += "<a target='_blank' href='"+fullurl+"'><img width='100' height='100' alt='' src=" + substring + " id=''></a><p>"
         console.log(skunum + " done");
-        if (respond.outfits[num].articles[skunum + 1]) {
-          checkSKU(skunum + 1)
-        } else {
-          localhtml +="<p>==========================================================================";
-          localhtml += "product "+num +" has "+ (skunum+1) +" sku";
-
-          fs.appendFile(filename, localhtml, function (err) {
-            console.log("product "+num +" has "+ (skunum+1) +" sku");
-            if (num < 302)
-              starttocreatehtml(num + 1)
-          });
-          localhtml="";
-        }
+        
       } else {
-        console.log(skunum + " passed empty try again: https://www.zalando.de/katalog/?q="+ respond.outfits[num].articles[skunum + 1].sku);
-        checkSKU(skunum)
+        console.log(skunum + " passed empty try again: https://www.zalando.de/katalog/?q="+ respond.outfits[num].articles[skunum].sku);
+        localhtml +="<p>!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
+        localhtml +skunum + " passed empty try again: https://www.zalando.de/katalog/?q="+ respond.outfits[num].articles[skunum].sku
+        //activate retrial 
+        //checkSKU(skunum)
       }
+      if (respond.outfits[num].articles[skunum + 1]) {
+        checkSKU(skunum + 1)
+      } else {
+        localhtml +="<p>==========================================================================";
+        localhtml += "product "+num +" has "+ (skunum+1) +" sku";
+
+        fs.appendFile(filename, localhtml, function (err) {
+          console.log("product "+num +" has "+ (skunum+1) +" sku");
+          if (num < 302)
+            starttocreatehtml(num + 1)
+        });
+        localhtml="";
+      }
+
     });
   }
   checkSKU(0)
