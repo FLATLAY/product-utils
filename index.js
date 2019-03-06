@@ -2,10 +2,15 @@
 var express = require("express");
 var app = express();
 var path = require("path");
+const readline = require('readline');
+const {google} = require('googleapis');
+
+
 
 var publicDir = require('path').join(__dirname, '/uploads');
 app.use(express.static(publicDir));
 const fs = require('fs');
+
 
 module.exports = app;
 const cheerio = require('cheerio')
@@ -21,7 +26,7 @@ const excelToJson = require('convert-excel-to-json');
 var request = require('request');
 
 var host = "http://localhost";
-var port = process.env.PORT || 2019;
+var port = process.env.PORT || 2020;
 app.listen(port, function () {
   console.log(`Flat-lay app is running on ${host}:${port}`);
 });
@@ -290,3 +295,235 @@ catch (e) {
 }
 }
 
+
+// If modifying these scopes, delete token.json.
+const SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
+// The file token.json stores the user's access and refresh tokens, and is
+// created automatically when the authorization flow completes for the first
+// time.
+const TOKEN_PATH = 'token.json';
+
+
+/**
+ * Create an OAuth2 client with the given credentials, and then execute the
+ * given callback function.
+ * @param {Object} credentials The authorization client credentials.
+ * @param {function} callback The callback to call with the authorized client.
+ */
+function authorize(credentials, callback) {
+  const {client_secret, client_id, redirect_uris} = credentials.installed;
+  const oAuth2Client = new google.auth.OAuth2(
+      client_id, client_secret, redirect_uris[0]);
+
+  // Check if we have previously stored a token.
+  fs.readFile(TOKEN_PATH, (err, token) => {
+    if (err) return getNewToken(oAuth2Client, callback);
+    oAuth2Client.setCredentials(JSON.parse(token));
+    callback(oAuth2Client);
+  });
+}
+
+/**
+ * Get and store new token after prompting for user authorization, and then
+ * execute the given callback with the authorized OAuth2 client.
+ * @param {google.auth.OAuth2} oAuth2Client The OAuth2 client to get token for.
+ * @param {getEventsCallback} callback The callback for the authorized client.
+ */
+function getNewToken(oAuth2Client, callback) {
+  const authUrl = oAuth2Client.generateAuthUrl({
+    access_type: 'offline',
+    scope: SCOPES,
+  });
+  console.log('Authorize this app by visiting this url:', authUrl);
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+  rl.question('Enter the code from that page here: ', (code) => {
+    rl.close();
+    oAuth2Client.getToken(code, (err, token) => {
+      if (err) return console.error('Error while trying to retrieve access token', err);
+      oAuth2Client.setCredentials(token);
+      // Store the token to disk for later program executions
+      fs.writeFile(TOKEN_PATH, JSON.stringify(token), (err) => {
+        if (err) return console.error(err);
+        console.log('Token stored to', TOKEN_PATH);
+      });
+      callback(oAuth2Client);
+    });
+  });
+}
+
+/**
+ * Prints the names and majors of students in a sample spreadsheet:
+ * @see https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
+ * @param {google.auth.OAuth2} auth The authenticated Google OAuth client.
+ */
+
+
+function listMajors(auth) {
+  const sheets = google.sheets({version: 'v4', auth});
+  sheets.spreadsheets.values.get({
+    spreadsheetId: '1vDkK1tKbDe9gFd-c9RYM51KtnpZ3RhZHFaUf2g0JUb8',
+    range: 'A:S',
+  }, (err, res) => {
+    if (err) return console.log('The API returned an error: ' + err);
+    const rows = res.data.values;
+    if (rows.length) {
+      
+      
+
+      
+      rows.map((element) => {
+        var tempElement = {};
+        if (counter < last) {
+          count++
+    
+    
+          tempElement["id"] = element[0]
+          tempElement["gender"] = element[2]
+          tempElement["title"] = element[5]
+          tempElement["description"] = ""
+          tempElement["image_url"] = element[0]
+          checkUrl(tempElement["image_url"])
+    
+    
+          tempElement["original_url"] = element[1]
+    
+          tempElement["influencer"] = {}
+    
+          tempElement["influencer"]["id"] = element[4]
+    
+          tempElement["influencer"]["name"] = element[6]
+          tempElement["influencer"]["country"] = element[7]
+          tempElement["influencer"]["description"] = ""
+          tempElement["influencer"]["profile_image_url"] = element[8]
+          tempElement["influencer"]["header_image_url"] = ""
+          checkUrl(element["Profile Image URL"])
+    
+    
+          tempElement["influencer"]["social_accounts"] = {}
+          tempElement["influencer"]["social_accounts"]["instagram"] = element[9]
+          tempElement["influencer"]["social_accounts"]["facebook"] = ""
+          tempElement["influencer"]["social_accounts"]["pinterest"] = ""
+          tempElement["influencer"]["social_accounts"]["tumblr"] = ""
+          tempElement["influencer"]["social_accounts"]["web"] = ""
+          tempElement["Tags"] = []
+          if (element[10])
+            tempElement["Tags"].push(element[10])
+          if (element[11])
+            tempElement["Tags"].push(element[11])
+          if (element[12])
+            tempElement["Tags"].push(element[12])
+    
+          tempElement["articles"] = []
+          if (element[13]) {
+            tempElement["articles"].push({
+              "match_type": "similar",
+              "sku": element[13]
+            })
+    
+          }
+          if (element[14]) {
+            tempElement["articles"].push({
+              "match_type": "similar",
+              "sku": element[14]
+            })
+          }
+          if (element[15]) {
+            tempElement["articles"].push({
+              "match_type": "similar",
+              "sku": element[15]
+            })
+          }
+          if (element[16]) {
+            tempElement["articles"].push({
+              "match_type": "similar",
+              "sku": element[16]
+            })
+          }
+          if (element[17]) {
+            tempElement["articles"].push({
+              "match_type": "similar",
+              "sku": element[17]
+            })
+          }
+          if (element[18]) {
+            tempElement["articles"].push({
+              "match_type": "similar",
+              "sku": element[18]
+            })
+          }
+    
+          //double check if sku 1 doesnt exist dont add it
+          if (element[13]) {
+            respond.outfits.push(tempElement);
+            counter++;
+          }
+    
+        }
+      });
+      console.log(count + " Items was read");
+    
+      respond.outfits.shift();
+      links.shift();
+      links.shift();
+    
+      var filename = req.file.filename;
+      filename = filename.replace(/\..+$/, '');
+      filename = publicDir + '/' + filename + "-" + pagenum + '.json';
+      console.log(filename)
+      fs.writeFile(filename, JSON.stringify(respond), function (err) {
+        if (err) {
+          return console.log(err);
+        }
+      });
+    
+      //starttocheck(links.pop());
+      starttocreatehtml(13);
+      res.send(respond)
+
+
+
+
+
+
+
+
+
+
+
+
+    } else {
+      console.log('No data found.');
+    }
+  });
+}
+
+
+
+
+app.get("/check", function (req, res) {
+  var response = {};
+
+
+
+  var counter = 0;
+  var last = 310;
+  var count = 0
+
+  console.log("products from " + counter + " to " + last);
+
+
+  // Load client secrets from a local file.
+fs.readFile('credentials.json', (err, content) => {
+  if (err) return console.log('Error loading client secret file:', err);
+  // Authorize a client with credentials, then call the Google Sheets API.
+  authorize(JSON.parse(content), listMajors);
+});
+
+
+
+
+ 
+});
