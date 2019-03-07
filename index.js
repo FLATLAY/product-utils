@@ -3,7 +3,9 @@ var express = require("express");
 var app = express();
 var path = require("path");
 const readline = require('readline');
-const {google} = require('googleapis');
+const {
+  google
+} = require('googleapis');
 
 
 
@@ -184,7 +186,7 @@ app.post("/exceltojson", upload.single("file"), function (req, res) {
   });
 
   //starttocheck(links.pop());
-  starttocreatehtml(13);
+  starttocreatehtml(1);
   res.send(respond)
 });
 
@@ -232,67 +234,82 @@ function starttocheck(url) {
 var count = 0;
 var html = ""
 async function starttocreatehtml(num) {
-console.log("start to create " + num);
-var filename = publicDir + '/somerandom.html';
 
-var url = "https://www.zalando.de/katalog/?q="
-var localhtml = "";
-try {
-  localhtml += "<p><p><p> id: " + respond.outfits[num].id + "<p>"
-  localhtml += "<img width='500' height='600' src=" + respond.outfits[num].image_url + "><p>"
+  console.log("start to create " + num);
+  var filename = publicDir + '/somerandom.html';
 
-  function checkSKU(skunum) {
-    var fullurl = url + respond.outfits[num].articles[skunum].sku;
-    request.get(fullurl, function (error, response) {
-      
-      var $ = cheerio.load(response.body);
-      var substring = $('meta[property="og:image"]').attr('content');
-
-      //to checkout the html pages
-      //var aaa =""+ response.body;
-      //fs.appendFile(filename, aaa, function (err) { });
-      
-      //second rule(if og:image didnt exist)
-      if(!substring)
-      var substring = $('img[id="galleryImage-0"]').attr('src');
-    
-      if (substring) {
-        localhtml += "<a target='_blank' href='"+fullurl+"'><img width='100' height='100' alt='' src=" + substring + " id=''></a><p>"
-        console.log(skunum + " done");
-        
-      } else {
-        console.log(skunum + " passed empty try again: https://www.zalando.de/katalog/?q="+ respond.outfits[num].articles[skunum].sku);
-        localhtml +="<p>!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
-        localhtml +skunum + " passed empty try again: https://www.zalando.de/katalog/?q="+ respond.outfits[num].articles[skunum].sku
-        
-        fs.appendFile("problematicSkus.txt", respond.outfits[num].articles[skunum].sku +"\n", function (err) {});
-
-
-      }
-      if (respond.outfits[num].articles[skunum + 1]) {
-        checkSKU(skunum + 1)
-      } else {
-        localhtml +="<p>==========================================================================";
-        localhtml += "product "+num +" has "+ (skunum+1) +" sku";
-
-        fs.appendFile(filename, localhtml, function (err) {
-          console.log("product "+num +" has "+ (skunum+1) +" sku");
-          if (num < 302)
-            starttocreatehtml(num + 1)
-        });
-        localhtml="";
-      }
-
-    });
-  }
-  checkSKU(0)
   
 
+  var url = "https://www.zalando.de/katalog/?q="
+  try {
+    fs.appendFile(filename,
+      "<p><p><p> id: " + respond.outfits[num].id + "<p>" +
+      "<img width='500' height='600' src=" + respond.outfits[num].image_url + "><p>",
+      function (err) {});
 
-}
-catch (e) {
-  console.log('problem: ' + e);
-}
+
+
+    function checkSKU(skunum) {
+      var fullurl = url + respond.outfits[num].articles[skunum].sku;
+      request.get(fullurl, function (error, response) {
+
+        var $ = cheerio.load(response.body);
+        var substring = $('meta[property="og:image"]').attr('content');
+
+        //to checkout the html pages
+        //var aaa =""+ response.body;
+        //fs.appendFile(filename, aaa, function (err) { });
+
+        //second rule(if og:image didnt exist)
+        if (!substring)
+          var substring = $('img[id="galleryImage-0"]').attr('src');
+
+        if (substring) {
+          fs.appendFile(filename,
+            "<a target='_blank' href='" + fullurl + "'><img width='100' height='100' alt='' src=" +
+            substring + " id=''></a><p>",
+            function (err) {});
+
+          console.log(skunum + " done");
+
+        } else {
+          console.log(skunum + " passed empty try again: https://www.zalando.de/katalog/?q=" + respond.outfits[num].articles[skunum].sku);
+
+          fs.appendFile(filename,
+            "<p>!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n" +
+            skunum + " passed empty try again: https://www.zalando.de/katalog/?q=" +
+            respond.outfits[num].articles[skunum].sku + "\n",
+            function (err) {});
+
+          fs.appendFile("problematicSkus.txt", respond.outfits[num].articles[skunum].sku + "\n", function (err) {});
+
+
+        }
+        if (respond.outfits[num].articles[skunum + 1]) {
+          checkSKU(skunum + 1)
+        } else {
+
+
+          fs.appendFile(filename,
+            "<p>==========================================================================" +
+            "product " + num + " has " + (skunum + 1) + " sku",
+            function (err) {
+              console.log("product " + num + " has " + (skunum + 1) + " sku");
+              if (num < 302)
+                starttocreatehtml(num + 1)
+            });
+
+        }
+
+      });
+    }
+    checkSKU(0)
+
+
+
+  } catch (e) {
+    console.log('problem: ' + e);
+  }
 }
 
 
@@ -310,16 +327,20 @@ const TOKEN_PATH = 'token.json';
  * @param {Object} credentials The authorization client credentials.
  * @param {function} callback The callback to call with the authorized client.
  */
-function authorize(credentials, callback) {
-  const {client_secret, client_id, redirect_uris} = credentials.installed;
+function authorize(credentials, callback, res) {
+  const {
+    client_secret,
+    client_id,
+    redirect_uris
+  } = credentials.installed;
   const oAuth2Client = new google.auth.OAuth2(
-      client_id, client_secret, redirect_uris[0]);
+    client_id, client_secret, redirect_uris[0]);
 
   // Check if we have previously stored a token.
   fs.readFile(TOKEN_PATH, (err, token) => {
     if (err) return getNewToken(oAuth2Client, callback);
     oAuth2Client.setCredentials(JSON.parse(token));
-    callback(oAuth2Client);
+    callback(oAuth2Client, res);
   });
 }
 
@@ -361,47 +382,58 @@ function getNewToken(oAuth2Client, callback) {
  */
 
 
-function listMajors(auth) {
-  const sheets = google.sheets({version: 'v4', auth});
+function checkExcel(auth, res) {
+
+  var counter = 0;
+  var last = 310;
+  var count = 0
+
+  console.log("products from " + counter + " to " + last);
+
+
+  const sheets = google.sheets({
+    version: 'v4',
+    auth
+  });
   sheets.spreadsheets.values.get({
     spreadsheetId: '1vDkK1tKbDe9gFd-c9RYM51KtnpZ3RhZHFaUf2g0JUb8',
     range: 'A:S',
-  }, (err, res) => {
+  }, (err, res2) => {
     if (err) return console.log('The API returned an error: ' + err);
-    const rows = res.data.values;
+    const rows = res2.data.values;
     if (rows.length) {
-      
-      
 
-      
+
+
+
       rows.map((element) => {
         var tempElement = {};
         if (counter < last) {
           count++
-    
-    
+
+
           tempElement["id"] = element[0]
           tempElement["gender"] = element[2]
           tempElement["title"] = element[5]
           tempElement["description"] = ""
           tempElement["image_url"] = element[0]
           checkUrl(tempElement["image_url"])
-    
-    
+
+
           tempElement["original_url"] = element[1]
-    
+
           tempElement["influencer"] = {}
-    
+
           tempElement["influencer"]["id"] = element[4]
-    
+
           tempElement["influencer"]["name"] = element[6]
           tempElement["influencer"]["country"] = element[7]
           tempElement["influencer"]["description"] = ""
           tempElement["influencer"]["profile_image_url"] = element[8]
           tempElement["influencer"]["header_image_url"] = ""
           checkUrl(element["Profile Image URL"])
-    
-    
+
+
           tempElement["influencer"]["social_accounts"] = {}
           tempElement["influencer"]["social_accounts"]["instagram"] = element[9]
           tempElement["influencer"]["social_accounts"]["facebook"] = ""
@@ -415,14 +447,14 @@ function listMajors(auth) {
             tempElement["Tags"].push(element[11])
           if (element[12])
             tempElement["Tags"].push(element[12])
-    
+
           tempElement["articles"] = []
           if (element[13]) {
             tempElement["articles"].push({
               "match_type": "similar",
               "sku": element[13]
             })
-    
+
           }
           if (element[14]) {
             tempElement["articles"].push({
@@ -454,33 +486,33 @@ function listMajors(auth) {
               "sku": element[18]
             })
           }
-    
+
           //double check if sku 1 doesnt exist dont add it
           if (element[13]) {
             respond.outfits.push(tempElement);
             counter++;
           }
-    
+
         }
       });
       console.log(count + " Items was read");
-    
+
       respond.outfits.shift();
       links.shift();
       links.shift();
-    
-      var filename = req.file.filename;
-      filename = filename.replace(/\..+$/, '');
-      filename = publicDir + '/' + filename + "-" + pagenum + '.json';
+
+      var filename = "heyhey";
+      filename = publicDir + '/' + filename + '.json';
       console.log(filename)
       fs.writeFile(filename, JSON.stringify(respond), function (err) {
         if (err) {
           return console.log(err);
         }
       });
-    
+
       //starttocheck(links.pop());
-      starttocreatehtml(13);
+      starttocreatehtml(1);
+
       res.send(respond)
 
 
@@ -505,25 +537,38 @@ function listMajors(auth) {
 
 app.get("/check", function (req, res) {
   var response = {};
+  var filename = publicDir + '/somerandom.html';
+  fs.writeFile("problematicSkus.txt", "----------------------- \n", function (err) {});
+  fs.writeFile(filename, "----------------------\n", function (err) {});
 
-
-
-  var counter = 0;
-  var last = 310;
-  var count = 0
-
-  console.log("products from " + counter + " to " + last);
-
-
+  
   // Load client secrets from a local file.
-fs.readFile('credentials.json', (err, content) => {
-  if (err) return console.log('Error loading client secret file:', err);
-  // Authorize a client with credentials, then call the Google Sheets API.
-  authorize(JSON.parse(content), listMajors);
+  fs.readFile('credentials.json', (err, content) => {
+    if (err) return console.log('Error loading client secret file:', err);
+    // Authorize a client with credentials, then call the Google Sheets API.
+    authorize(JSON.parse(content), checkExcel, res);
+  });
 });
 
 
+app.get("/readerrors", function (req, res) {
+  var response = {};
+  // Load client secrets from a local file.
+  fs.readFile('problematicSkus.txt', (err, content) => {
+    if (err) return console.log('Error: ', err);
 
+    res.set('Content-Type', 'text/plain');
+    res.send(content);
+  });
+});
 
- 
+app.get("/readhtmls", function (req, res) {
+  var response = {};
+  // Load client secrets from a local file.
+  fs.readFile('./uploads/somerandom.html', (err, content) => {
+    if (err) return console.log('Error: ', err);
+
+    res.set('Content-Type', 'text/html');
+    res.send(content);
+  });
 });
