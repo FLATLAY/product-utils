@@ -212,8 +212,8 @@ function starttocheck(url) {
   request.head(url, function (error, response) {
     try {
       if (response.statusCode != 200) {
-        console.log('url:', url);
-        console.log('statusCode:', response.statusCode);
+        fs.appendFile("problematicImages.txt", 'url:'+ url + "\n", function (err) {});
+        fs.appendFile('statusCode:'+ response.statusCode + "\n\n", function (err) {});
       } else {
         countFine++;
       };
@@ -233,7 +233,7 @@ function starttocheck(url) {
 
 var count = 0;
 var html = ""
-async function starttocreatehtml(num) {
+ function starttocreatehtml(num) {
 
   console.log("start to create " + num);
   var filename = publicDir + '/somerandom.html';
@@ -510,7 +510,7 @@ function checkExcel(auth, res) {
         }
       });
 
-      //starttocheck(links.pop());
+      starttocheck(links.pop());
       starttocreatehtml(1);
 
       res.send(respond)
@@ -539,6 +539,7 @@ app.get("/check", function (req, res) {
   var response = {};
   var filename = publicDir + '/somerandom.html';
   fs.writeFile("problematicSkus.txt", "----------------------- \n", function (err) {});
+  fs.writeFile("problematicImages.txt", "----------------------- \n", function (err) {});
   fs.writeFile(filename, "----------------------\n", function (err) {});
 
   
