@@ -412,7 +412,7 @@ function checkExcel(auth, res) {
           count++
 
 
-          tempElement["id"] = element[0]
+          tempElement["id"] = element[3]
           tempElement["gender"] = element[2]
           tempElement["title"] = element[5]
           tempElement["description"] = ""
