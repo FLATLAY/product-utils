@@ -80,6 +80,7 @@ app.post("/exceltojson", upload.single("file"), function (req, res) {
   console.log("products from " + counter + " to " + last);
 
   result['Sheet1'].forEach(element => {
+    console.log(element)
     var tempElement = {};
     if (counter < last) {
       count++
@@ -209,14 +210,22 @@ function checkUrl(url) {
 var countFine = 0
 
 function starttocheck(url) {
+  console.log(links.length + " url remains to be checked")
   request.head(url, function (error, response) {
     try {
+      if(response)
+      {
       if (response.statusCode != 200) {
-        fs.appendFile("problematicImages.txt", 'url:'+ url + "\n", function (err) {});
-        fs.appendFile('statusCode:'+ response.statusCode + "\n\n", function (err) {});
+        fs.appendFile("problematicImages.txt", 'url:'+ url + "\n"+'statusCode:'+ response.statusCode + "\n\n", function (err) {});
+        countFine++;
       } else {
         countFine++;
-      };
+      }
+      }else
+      {
+        fs.appendFile("problematicImages.txt", 'url:'+ url + "\n"+'statusCode: Noresponse' + "\n\n", function (err) {});
+        countFine++;
+      }
       var newurl = links.pop();
       if (newurl)
         starttocheck(newurl)
@@ -234,7 +243,7 @@ function starttocheck(url) {
 var count = 0;
 var html = ""
  function starttocreatehtml(num) {
-
+  if(respond.outfits[num]){
   console.log("start to create " + num);
   var filename = publicDir + '/somerandom.html';
 
@@ -303,6 +312,7 @@ var html = ""
 
       });
     }
+    if (respond.outfits[num].articles[0]) 
     checkSKU(0)
 
 
@@ -311,7 +321,7 @@ var html = ""
     console.log('problem: ' + e);
   }
 }
-
+}
 
 // If modifying these scopes, delete token.json.
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
@@ -487,15 +497,16 @@ function checkExcel(auth, res) {
             })
           }
 
-          //double check if sku 1 doesnt exist dont add it
+          //double check if sku 1 doesnt exist dont add errors
           if (element[13]) {
-            respond.outfits.push(tempElement);
-            counter++;
+            fs.writeFile("problematicSkus.txt", "First SKU is missing on row"+ counter+"please double check \n", function (err) {});
           }
-
+          respond.outfits.push(tempElement);
+          counter++;
         }
       });
       console.log(count + " Items was read");
+      console.log(respond);
 
       respond.outfits.shift();
       links.shift();
@@ -553,13 +564,18 @@ app.get("/check", function (req, res) {
 
 
 app.get("/readerrors", function (req, res) {
-  var response = {};
+  var response;
   // Load client secrets from a local file.
   fs.readFile('problematicSkus.txt', (err, content) => {
     if (err) return console.log('Error: ', err);
 
     res.set('Content-Type', 'text/plain');
-    res.send(content);
+    response = contnt + "\n"+ "----------------------------------\n Image errors: \n";
+  });
+  fs.readFile('problematicImages.txt', (err, content) => {
+    if (err) return console.log('Error: ', err);
+    response += content;
+    res.send(response);
   });
 });
 
@@ -573,3 +589,7 @@ app.get("/readhtmls", function (req, res) {
     res.send(content);
   });
 });
+
+
+// Todo: TAKE CARE OF TRIMMING 
+// Todo: TAKE CARE OF non valid date
