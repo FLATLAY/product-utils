@@ -591,5 +591,53 @@ app.get("/readhtmls", function (req, res) {
 });
 
 
+
+app.get("/readerrors", function (req, res) {
+  var response;
+  // Load client secrets from a local file.
+  fs.readFile('problematicSkus.txt', (err, content) => {
+    if (err) return console.log('Error: ', err);
+
+    res.set('Content-Type', 'text/plain');
+    response = contnt + "\n"+ "----------------------------------\n Image errors: \n";
+  });
+  fs.readFile('problematicImages.txt', (err, content) => {
+    if (err) return console.log('Error: ', err);
+    response += content;
+    res.send(response);
+  });
+});
+
+
+
+app.get("/fix", async function (req, res) {
+  var response;
+  // Load client secrets from a local file.
+  fs.readFile('uploads/heyhey.json', async (err, content) =>  {
+    if (err) return console.log('Error: ', err);
+content = JSON.parse(content)
+    for (var element of content.outfits) {
+      await updatePromise(element).then(function(uid) {
+        console.log("now we go next ---->");
+      });
+    }
+    
+    res.set('Content-Type', 'application/json');
+    response = content;
+    res.send(response);
+  });
+});
+var updatePromise = function(element) {
+  return new Promise(function(resolve, reject) {
+console.log(element)
+
+  })
+}
+
+
+
+
+
+
 // Todo: TAKE CARE OF TRIMMING 
 // Todo: TAKE CARE OF non valid date
