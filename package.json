@@ -16,7 +16,7 @@
     "request": "^2.88.0"
   },
   "devDependencies": {
-    "lint-staged": "^8.1.0",
+    "lint-staged": "^13.1.0",
     "pre-commit": "^1.2.2",
     "prettier": "^1.15.2",
     "should": "^7.1.0",
